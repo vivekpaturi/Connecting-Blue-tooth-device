@@ -1,0 +1,75 @@
+import React, { Component } from 'react';
+import { View, Text, Button, Platform, PermissionsAndroid } from 'react-native';
+import BluetoothSerial from 'react-native-bluetooth-serial';
+
+class BluetoothConnection extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      connected: false,
+      deviceName: '',
+      deviceAddress: '',
+    };
+  }
+
+  componentDidMount() {
+    this.checkBluetoothEnabled();
+    this.enableBluetooth();
+  }
+
+  checkBluetoothEnabled = async () => {
+    const isEnabled = await BluetoothSerial.isEnabled();
+    if (!isEnabled) {
+      
+    }
+  };
+
+  enableBluetooth = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADMIN
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Bluetooth permission granted');
+        } else {
+          console.log('Bluetooth permission denied');
+        }
+      } catch (err) {
+        console.warn(err);
+      }
+    }
+  };
+
+  connectToDevice = async (device) => {
+    try {
+      await BluetoothSerial.connect(device.address);
+      this.setState({
+        connected: true,
+        deviceName: device.name,
+        deviceAddress: device.address,
+      });
+    } catch (error) {
+      console.error('Error connecting to device: ' + error);
+    }
+  };
+
+  render() {
+    return (
+      <View>
+        <Text>Bluetooth Device: {this.state.deviceName}</Text>
+        <Text>Device Address: {this.state.deviceAddress}</Text>
+        {this.state.connected ? (
+          <Text>Connected to the device</Text>
+        ) : (
+          <Button
+            title="Connect to Bluetooth Device"
+            onPress={() => this.connectToDevice(deviceToConnect)} 
+          />
+        )}
+      </View>
+    );
+  }
+}
+
+export default BluetoothConnection;
